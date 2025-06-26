@@ -1,0 +1,134 @@
+.dialogRoot {
+  position: relative;
+  z-index: 10;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.dialogContainer {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+}
+
+.dialogWrapper {
+  display: flex;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+}
+
+.panel {
+  width: 100%;
+  max-width: 400px;
+  transform: none;
+  overflow: hidden;
+  border-radius: 12px;
+  background-color: #fff;
+  padding: 24px;
+  text-align: left;
+  vertical-align: middle;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+
+.title {
+  font-size: 1.125em;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  margin-right: 40px;
+}
+
+.titleIcon {
+  margin-right: 8px;
+}
+
+.descriptionContainer {
+  margin-top: 8px;
+}
+
+.descriptionText {
+  font-size: 0.875em;
+  color: #6b7280;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  border-radius: 50%;
+  outline: none;
+  transition: background-color 0.15s ease-in-out; /* Add transition for hover */
+}
+
+.closeButton:hover {
+  background-color: #f0f0f0; /* Simulate closeButtonHover style */
+}
+
+/* Headless UI Transition styles */
+.transitionEnter {
+  transition-property: opacity, transform;
+  transition-duration: 300ms;
+  transition-timing-function: ease-out;
+}
+
+.transitionEnterFrom {
+  opacity: 0;
+}
+
+.transitionEnterTo {
+  opacity: 100;
+}
+
+.transitionLeave {
+  transition-property: opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in;
+}
+
+.transitionLeaveFrom {
+  opacity: 100;
+}
+
+.transitionLeaveTo {
+  opacity: 0;
+}
+
+.panelEnterFrom {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.panelEnterTo {
+  opacity: 100;
+  transform: scale(1);
+}
+
+.panelLeaveFrom {
+  opacity: 100;
+  transform: scale(1);
+}
+
+.panelLeaveTo {
+  opacity: 0;
+  transform: scale(0.95);
+}
