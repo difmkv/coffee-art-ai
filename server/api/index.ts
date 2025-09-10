@@ -10,7 +10,7 @@ import { clearMessages } from '../agent/memory'
 import type { AIMessage } from '../types'
 
 const app = express()
-const port = 3000
+const port = 8000
 let isProcessing = false
 const jobStore: Record<
   string,

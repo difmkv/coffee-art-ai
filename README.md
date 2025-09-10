@@ -157,7 +157,7 @@ Create a `.env` file in the `server` directory:
 OPENAI_API_KEY=your_openai_api_key_here
 
 # Server Configuration
-PORT=3000
+PORT=8000
 NODE_ENV=development
 
 # CORS Configuration

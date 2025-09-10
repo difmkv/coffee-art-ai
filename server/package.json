@@ -3,7 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "npx tsx api/index.ts"
+    "start": "npx tsx api/index.ts",
+    "dev": "nodemon --watch './**/*.ts' --exec 'npx tsx api/index.ts'"
   },
   "overrides": {
     "whatwg-url": "13.0.0"
