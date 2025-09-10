@@ -143,5 +143,10 @@ app.get('/api/start', dailyLimiter, startHandler)
 app.get('/api/stream/:jobId', streamHandler)
 
 app.listen(port, () => {
-  console.log(`✅ Server listening at http://localhost:${port}`)
+  const deployedUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+    ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+    : `http://localhost:${port}`
+
+  console.log(`✅ Server running at: ${deployedUrl}`)
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
 })
