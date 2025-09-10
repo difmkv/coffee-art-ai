@@ -136,6 +136,7 @@ app.get('/api/hello', (req, res) => {
 })
 
 app.get('/hi', (req, res) => {
+  console.log('hi endpoint was hit', { req, res })
   res.json({ message: '|???hi from Express backend 👋' })
 })
 
