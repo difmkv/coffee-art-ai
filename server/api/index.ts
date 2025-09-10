@@ -131,6 +131,14 @@ const streamHandler: RequestHandler = (req, res) => {
   })
 }
 
+app.get('/api/hello', (req, res) => {
+  res.json({ message: '|???Hello from Express backend 👋' })
+})
+
+app.get('/hi', (req, res) => {
+  res.json({ message: '|???hi from Express backend 👋' })
+})
+
 app.get('/api/start', dailyLimiter, startHandler)
 app.get('/api/stream/:jobId', streamHandler)
 
