@@ -45,6 +45,10 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
     },
+    allowedHosts: [
+      "resplendent-fascination-production.up.railway.app",
+      "localhost",
+    ],
   },
   build: {
     outDir: "dist",
