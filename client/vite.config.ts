@@ -2,6 +2,11 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+console.log(
+  "process.env.RAILWAY_PUBLIC_DOMAIN",
+  process.env.RAILWAY_PUBLIC_DOMAIN
+);
+
 export default defineConfig({
   plugins: [
     react(),
@@ -40,7 +45,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: process.env.RAILWAY_PUBLIC_DOMAIN || "http://server:8000",
+        target: "https://coffee-art-ai-production.up.railway.app/",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
