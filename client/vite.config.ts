@@ -40,7 +40,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: process.env.RAILWAY_API_URL || "http://server:8000",
+        target: process.env.RAILWAY_PUBLIC_DOMAIN || "http://server:8000",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
