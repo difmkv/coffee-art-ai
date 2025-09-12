@@ -140,7 +140,7 @@ app.get('/hi', (req, res) => {
   res.json({ message: '|???hi from Express backend 👋' })
 })
 
-app.get('/api/start', dailyLimiter, startHandler)
+app.post('/api/start', dailyLimiter, startHandler)
 app.get('/api/stream/:jobId', streamHandler)
 
 app.listen(port, () => {
