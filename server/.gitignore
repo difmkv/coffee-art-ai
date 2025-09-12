@@ -177,3 +177,4 @@ dist
 
 db.json 
 cronJob.ts
+*.js
