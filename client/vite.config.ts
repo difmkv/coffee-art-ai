@@ -47,6 +47,7 @@ export default defineConfig({
     },
     allowedHosts: [
       "resplendent-fascination-production.up.railway.app",
+      "coffee-art-ai-production.up.railway.app",
       "localhost",
     ],
   },

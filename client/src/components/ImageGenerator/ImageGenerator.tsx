@@ -11,6 +11,11 @@ import {
 
 import styles from "./ImageGenerator.module.css";
 
+export const API_URL =
+  import.meta.env.MODE === "development"
+    ? "/api" // proxy works locally
+    : "https://coffee-art-ai-production.up.railway.app/api";
+
 export default function ImageGenerator() {
   const [userMessage, setUserMessage] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -26,13 +31,15 @@ export default function ImageGenerator() {
     setIsErrorDialogOpen(false);
 
     try {
-      const res = await fetch("/api/start");
+      const res = await fetch(`${API_URL}/start`);
       const data = await res.json();
       const jobId = data.jobId;
 
       setUserMessage(data.userMessage);
 
-      const eventSource = new EventSource(`/api/stream/${jobId}`);
+      const eventSource = new EventSource(`${API_URL}/stream/${jobId}`);
+
+      console.log(`${API_URL}/start`, `${API_URL}/stream/${jobId}`);
 
       eventSource.onmessage = (event) => {
         const { status, imageUrl: receivedImageUrl } = JSON.parse(event.data);
