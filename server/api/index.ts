@@ -26,11 +26,11 @@ app.use(cors({ origin: 'http://localhost:5173' }))
 // Rate limiter specifically for /api/start endpoint - 3 requests per 24 hours per IP
 const startEndpointLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
-  max: 3, // 3 requests per IP per 24 hours
+  max: 10, // 10 requests per IP per 24 hours
   message: {
     success: false,
     message:
-      "You've reached your daily limit of 3 image generations. Please try again in 24 hours.",
+      "You've reached your daily limit of 10 image generations. Please try again in 24 hours.",
     error: 'RATE_LIMIT_EXCEEDED',
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
