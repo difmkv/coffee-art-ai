@@ -23,19 +23,58 @@ const jobStore: Record<
 
 app.use(cors({ origin: 'http://localhost:5173' }))
 
-const dailyLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000,
-  max: 3,
-  message: 'Too many requests from this IP, please try again after 24 hours.',
-  standardHeaders: true,
-  legacyHeaders: false,
+// Rate limiter specifically for /api/start endpoint - 3 requests per 24 hours per IP
+const startEndpointLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  max: 3, // 3 requests per IP per 24 hours
+  message: {
+    success: false,
+    message:
+      "You've reached your daily limit of 3 image generations. Please try again in 24 hours.",
+    error: 'RATE_LIMIT_EXCEEDED',
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  keyGenerator: (req) => {
+    // Get IP address, considering proxy headers
+    return (
+      req.ip ||
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      'unknown'
+    )
+  },
+  skip: (req) => {
+    // Skip rate limiting for development/testing if needed
+    return (
+      process.env.NODE_ENV === 'development' &&
+      req.headers['x-skip-rate-limit'] === 'true'
+    )
+  },
+  handler: (req, res) => {
+    console.log(`Rate limit exceeded for IP: ${req.ip}`)
+    res.status(429).json({
+      success: false,
+      message:
+        "You've reached your daily limit of 3 image generations. Please try again in 24 hours.",
+      error: 'RATE_LIMIT_EXCEEDED',
+      resetTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    })
+  },
 })
 
-const startHandler: RequestHandler = async (_req, res) => {
+// Trust proxy to get real IP addresses (important for rate limiting)
+app.set('trust proxy', 1)
+
+const startHandler: RequestHandler = async (req, res) => {
+  console.log(`Image generation request from IP: ${req.ip}`)
+
   if (isProcessing) {
-    return void res.status(429).json({
+    return res.status(429).json({
       success: false,
       message: 'Image generation already in progress. Please try again later.',
+      error: 'GENERATION_IN_PROGRESS',
     })
   }
 
@@ -49,6 +88,8 @@ const startHandler: RequestHandler = async (_req, res) => {
     userMessage,
     imageUrl: null,
   }
+
+  console.log(`Started job ${jobId} for IP: ${req.ip}`)
 
   runAgent({ userMessage, tools })
     .then(async (messages) => {
@@ -82,17 +123,22 @@ const startHandler: RequestHandler = async (_req, res) => {
       jobStore[jobId].status = 'done'
       jobStore[jobId].imageUrl = imageUrl ?? null
 
+      console.log(`Completed job ${jobId} successfully`)
       await clearMessages()
     })
     .catch((err) => {
-      console.error('Image generation failed:', err)
+      console.error(`Image generation failed for job ${jobId}:`, err)
       jobStore[jobId].status = 'error'
     })
     .finally(() => {
       isProcessing = false
     })
 
-  res.json({ jobId, userMessage: userMessage.split('.')[0] })
+  res.json({
+    success: true,
+    jobId,
+    userMessage: userMessage.split('.')[0],
+  })
 }
 
 const streamHandler: RequestHandler = (req, res) => {
@@ -100,7 +146,11 @@ const streamHandler: RequestHandler = (req, res) => {
   const job = jobStore[jobId]
 
   if (!job) {
-    return void res.status(404).end()
+    return res.status(404).json({
+      success: false,
+      message: 'Job not found',
+      error: 'JOB_NOT_FOUND',
+    })
   }
 
   res.setHeader('Content-Type', 'text/event-stream')
@@ -118,7 +168,12 @@ const streamHandler: RequestHandler = (req, res) => {
       clearInterval(interval)
       res.end()
     } else if (job.status === 'error') {
-      res.write(`data: ${JSON.stringify({ status: 'error' })}\n\n`)
+      res.write(
+        `data: ${JSON.stringify({
+          status: 'error',
+          message: 'Image generation failed',
+        })}\n\n`
+      )
       clearInterval(interval)
       res.end()
     }
@@ -131,16 +186,29 @@ const streamHandler: RequestHandler = (req, res) => {
   })
 }
 
+// Test endpoints
 app.get('/api/hello', (req, res) => {
-  res.json({ message: '|???Hello from Express backend 👋' })
+  res.json({ message: 'Hello from Express backend 👋' })
 })
 
 app.get('/hi', (req, res) => {
-  console.log('hi endpoint was hit', { req, res })
-  res.json({ message: '|???hi from Express backend 👋' })
+  console.log('hi endpoint was hit', { ip: req.ip })
+  res.json({ message: 'hi from Express backend 👋' })
 })
 
-app.post('/api/start', dailyLimiter, startHandler)
+// Rate limit status endpoint (helpful for debugging)
+app.get('/api/rate-limit-status', (req, res) => {
+  res.json({
+    ip: req.ip,
+    headers: {
+      'x-forwarded-for': req.headers['x-forwarded-for'],
+      'x-real-ip': req.headers['x-real-ip'],
+    },
+  })
+})
+
+// Apply rate limiter only to the start endpoint
+app.get('/api/start', startEndpointLimiter, startHandler)
 app.get('/api/stream/:jobId', streamHandler)
 
 app.listen(port, () => {
@@ -150,4 +218,5 @@ app.listen(port, () => {
 
   console.log(`✅ Server running at: ${deployedUrl}`)
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
+  console.log(`🛡️  Rate limiting: 3 requests per IP per 24 hours on /api/start`)
 })
